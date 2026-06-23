@@ -61,7 +61,11 @@ File: `%APPDATA%\PCSleepService\config.json`
   "bind": "0.0.0.0",
   "countdown_seconds": 60,
   "allowed_cidrs": ["192.168.0.0/16", "10.0.0.0/8", "172.16.0.0/12"],
-  "rate_limit_seconds": 5
+  "rate_limit_seconds": 5,
+  "logging_enabled": true,
+  "log_max_bytes": 1000000,
+  "log_backup_count": 2,
+  "log_ping_requests": false
 }
 ```
 
@@ -73,6 +77,10 @@ File: `%APPDATA%\PCSleepService\config.json`
 | `countdown_seconds` | Seconds before sleep/shutdown |
 | `allowed_cidrs` | Allowed client subnets (RFC1918 by default) |
 | `rate_limit_seconds` | Minimum interval between requests |
+| `logging_enabled` | `false` disables all file logging |
+| `log_max_bytes` | Max size per log file before rotation (default 1 MB) |
+| `log_backup_count` | Number of rotated backup files kept (default 2) |
+| `log_ping_requests` | `false` skips logging `/ping` requests (default) |
 
 ## Request examples
 
@@ -100,7 +108,11 @@ Responses: `200 ok`, `202 accepted`, `401 unauthorized`, `403 forbidden`, `409 c
 
 ## Logs
 
-`%APPDATA%\PCSleepService\pc2sleep.log` (rotation: up to 3 files × 1 MB).
+`%APPDATA%\PCSleepService\pc2sleep.log`
+
+- Rotating files: default 1 MB per file, 2 backups (~3 MB total max)
+- `/ping` requests are **not** logged by default (`log_ping_requests: false`)
+- Set `"logging_enabled": false` in config to disable logging entirely (restart required)
 
 ## Tests (macOS / Linux / Windows)
 

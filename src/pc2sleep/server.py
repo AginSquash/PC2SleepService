@@ -90,6 +90,13 @@ class PCSleepRequestHandler(BaseHTTPRequestHandler):
     request_state: RequestState
 
     def log_message(self, format: str, *args: object) -> None:
+        if not self.config.logging_enabled:
+            return
+
+        path = urlparse(self.path).path.rstrip("/") or "/"
+        if path == "/ping" and not self.config.log_ping_requests:
+            return
+
         logger.info("%s - %s", self.address_string(), format % args)
 
     def do_GET(self) -> None:

@@ -36,6 +36,20 @@ def test_save_and_load_roundtrip(tmp_path, monkeypatch):
     assert loaded.port == 9999
 
 
+def test_invalid_log_max_bytes_raises():
+    config = AppConfig(token="a" * 32, log_max_bytes=1000)
+    with pytest.raises(ValueError, match="log_max_bytes"):
+        config.validate()
+
+
+def test_logging_defaults():
+    config = AppConfig(token="a" * 32)
+    assert config.logging_enabled is True
+    assert config.log_ping_requests is False
+    assert config.log_max_bytes == 1_000_000
+    assert config.log_backup_count == 2
+
+
 def test_load_creates_config_on_first_run(tmp_path, monkeypatch):
     monkeypatch.setattr("pc2sleep.config.get_app_data_dir", lambda: tmp_path)
     assert not get_config_path().exists()

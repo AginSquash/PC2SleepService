@@ -47,6 +47,10 @@ class AppConfig:
     countdown_seconds: int = 60
     allowed_cidrs: list[str] = field(default_factory=lambda: list(DEFAULT_ALLOWED_CIDRS))
     rate_limit_seconds: int = 5
+    logging_enabled: bool = True
+    log_max_bytes: int = 1_000_000
+    log_backup_count: int = 2
+    log_ping_requests: bool = False
 
     def validate(self) -> None:
         if not self.token or len(self.token) < 16:
@@ -59,6 +63,10 @@ class AppConfig:
             raise ValueError("rate_limit_seconds must be >= 0")
         if not self.allowed_cidrs:
             raise ValueError("allowed_cidrs must not be empty")
+        if self.log_max_bytes < 10_000:
+            raise ValueError("log_max_bytes must be >= 10000")
+        if self.log_backup_count < 0:
+            raise ValueError("log_backup_count must be >= 0")
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

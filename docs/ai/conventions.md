@@ -28,6 +28,13 @@
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, value `PCSleepService`
 - Disabled by default — user enables via tray menu
 
+## Logging
+
+- `logging_enabled` — master switch (default `true`)
+- `log_max_bytes` — per-file limit before rotation (default 1 MB)
+- `log_backup_count` — rotated files kept (default 2, ~3 MB total)
+- `log_ping_requests` — log `/ping` hits (default `false`)
+
 ## Build
 
 - `scripts/build_exe.cmd` or `scripts/build_exe.ps1` on Windows

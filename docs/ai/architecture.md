@@ -24,7 +24,9 @@ flowchart LR
 ## Data
 
 - Config: `%APPDATA%/PCSleepService/config.json`
-- Log: `%APPDATA%/PCSleepService/pc2sleep.log` (RotatingFileHandler)
+- Log: `%APPDATA%/PCSleepService/pc2sleep.log` (RotatingFileHandler, configurable size/backups)
+- `log_ping_requests: false` by default — periodic `/ping` does not fill the log
+- `logging_enabled: false` disables all file logging
 - Single instance: mutex `Global\PCSleepService_v1`
 
 ## Startup
