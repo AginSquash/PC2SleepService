@@ -4,9 +4,9 @@
 
 - Python 3.11+, PySide6 (tray + countdown UI), stdlib `http.server`
 - WinAPI: `powrprof.SetSuspendState`, `shutdown /s`, `Shell.Application.MinimizeAll` (comtypes)
-- PyInstaller → single `.exe` (сборка только на Windows)
+- PyInstaller → single `.exe` (build on Windows only)
 
-## Потоки
+## Threads
 
 ```mermaid
 flowchart LR
@@ -17,16 +17,16 @@ flowchart LR
     Countdown --> Actions["sleep/shutdown"]
 ```
 
-- HTTP в daemon-thread (`ThreadingHTTPServer`)
-- UI только в main thread (Qt)
-- `ActionEmitter` — thread-safe мост HTTP → UI
+- HTTP in daemon thread (`ThreadingHTTPServer`)
+- UI only on main thread (Qt)
+- `ActionEmitter` — thread-safe bridge HTTP → UI
 
-## Данные
+## Data
 
-- Конфиг: `%APPDATA%/PCSleepService/config.json`
-- Лог: `%APPDATA%/PCSleepService/pc2sleep.log` (RotatingFileHandler)
+- Config: `%APPDATA%/PCSleepService/config.json`
+- Log: `%APPDATA%/PCSleepService/pc2sleep.log` (RotatingFileHandler)
 - Single instance: mutex `Global\PCSleepService_v1`
 
-## Запуск
+## Startup
 
-`python -m pc2sleep` → tray + HTTP server. Окна нет до входящего запроса `/sleep` или `/shutdown`.
+`python -m pc2sleep` → tray + HTTP server. No window until `/sleep` or `/shutdown` request arrives.

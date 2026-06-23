@@ -23,8 +23,8 @@ from pc2sleep import actions
 logger = logging.getLogger(__name__)
 
 ACTION_LABELS = {
-    "sleep": "ПК будет переведён в сон",
-    "shutdown": "ПК будет выключен",
+    "sleep": "The PC will go to sleep",
+    "shutdown": "The PC will shut down",
 }
 
 
@@ -125,12 +125,12 @@ class CountdownDialog(QDialog):
         layout.setContentsMargins(28, 28, 28, 28)
         layout.setSpacing(14)
 
-        title = QLabel("Внимание!")
+        title = QLabel("Warning!")
         title.setObjectName("title")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        action_label = ACTION_LABELS.get(self._action, "Действие будет выполнено")
-        subtitle = QLabel(f"{action_label} через:")
+        action_label = ACTION_LABELS.get(self._action, "Action will be performed")
+        subtitle = QLabel(f"{action_label} in:")
         subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self._countdown_label = QLabel(str(self._remaining))
@@ -143,12 +143,12 @@ class CountdownDialog(QDialog):
         self._progress.setValue(0)
         self._progress.setTextVisible(False)
 
-        hint = QLabel("Нажмите «Отмена», чтобы остановить")
+        hint = QLabel('Press "Cancel" to stop')
         hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         btn_row = QHBoxLayout()
         btn_row.addStretch()
-        cancel_btn = QPushButton("Отмена")
+        cancel_btn = QPushButton("Cancel")
         cancel_btn.setObjectName("cancel")
         cancel_btn.setMinimumSize(140, 42)
         cancel_btn.clicked.connect(self._on_cancel)

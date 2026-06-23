@@ -1,22 +1,22 @@
 # PC2Sleep Service
 
-HTTP-сервис для Windows 11: удалённый перевод ПК в сон или выключение по GET-запросу из локальной сети. Перед действием показывается окно с обратным отсчётом (60 с) и кнопкой отмены.
+HTTP service for Windows 11: remotely put the PC to sleep or shut it down via a GET request from the local network. A countdown warning window (60 s) with a cancel button is shown before the action runs.
 
-## Возможности
+## Features
 
-- `GET /sleep?token=...` — сон через 60 секунд
-- `GET /shutdown?token=...` — выключение через 60 секунд
-- `GET /ping?token=...` — проверка доступности
-- Окно предупреждения поверх всех окон, сворачивание открытых программ
-- Иконка в системном трее, автозагрузка (опционально)
-- Минимальная нагрузка в фоне (~0% CPU в idle)
+- `GET /sleep?token=...` — sleep after 60 seconds
+- `GET /shutdown?token=...` — shutdown after 60 seconds
+- `GET /ping?token=...` — availability check
+- Warning window on top of all apps, minimizes open windows
+- System tray icon, optional autostart
+- Minimal background load (~0% CPU when idle)
 
-## Требования
+## Requirements
 
-- Windows 11 (или Windows 10)
-- Python 3.11+ (для разработки / сборки)
+- Windows 11 (or Windows 10)
+- Python 3.11+ (for development / building)
 
-## Установка (разработка)
+## Installation (development)
 
 ```powershell
 git clone <repo>
@@ -27,25 +27,36 @@ pip install -e ".[dev]"
 python -m pc2sleep
 ```
 
-При первом запуске создаётся `%APPDATA%\PCSleepService\config.json` с токеном. Токен показывается один раз и копируется в буфер.
+On first launch, `%APPDATA%\PCSleepService\config.json` is created with a token. The token is shown once and copied to the clipboard.
 
-## Сборка .exe (только на Windows)
+## Building .exe (Windows only)
 
-```powershell
-.\scripts\build_exe.ps1
+**Option 1 (easiest):** double-click:
+
+```
+scripts\build_exe.cmd
 ```
 
-Результат: `dist\PCSleepService.exe`
+**Option 2:** from PowerShell in the project root:
 
-Скопируйте exe куда удобно, включите автозагрузку через меню трея.
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\build_exe.ps1
+```
 
-## Конфигурация
+> **Why does `.\scripts\build_exe.ps1` open in an editor?**  
+> In cmd.exe and when double-clicking, Windows often associates `.ps1` with Notepad/editor instead of PowerShell. Use `build_exe.cmd` or the command above with `powershell -File`.
 
-Файл: `%APPDATA%\PCSleepService\config.json`
+Output: `dist\PCSleepService.exe`
+
+Copy the exe wherever you like and enable autostart from the tray menu if needed.
+
+## Configuration
+
+File: `%APPDATA%\PCSleepService\config.json`
 
 ```json
 {
-  "token": "<сгенерированный_токен>",
+  "token": "<generated_token>",
   "port": 8765,
   "bind": "0.0.0.0",
   "countdown_seconds": 60,
@@ -54,61 +65,61 @@ python -m pc2sleep
 }
 ```
 
-| Параметр | Описание |
-|----------|----------|
-| `token` | Секрет для запросов (мин. 16 символов) |
-| `port` | Порт HTTP-сервера |
-| `bind` | `0.0.0.0` — все интерфейсы, `127.0.0.1` — только localhost |
-| `countdown_seconds` | Секунды до сна/выключения |
-| `allowed_cidrs` | Разрешённые подсети клиентов (RFC1918 по умолчанию) |
-| `rate_limit_seconds` | Минимальный интервал между запросами |
+| Parameter | Description |
+|-----------|-------------|
+| `token` | Secret for requests (min. 16 characters) |
+| `port` | HTTP server port |
+| `bind` | `0.0.0.0` — all interfaces, `127.0.0.1` — localhost only |
+| `countdown_seconds` | Seconds before sleep/shutdown |
+| `allowed_cidrs` | Allowed client subnets (RFC1918 by default) |
+| `rate_limit_seconds` | Minimum interval between requests |
 
-## Примеры запросов
+## Request examples
 
 ```bash
-# Проверка
+# Health check
 curl "http://192.168.1.100:8765/ping?token=YOUR_TOKEN"
 
-# Сон
+# Sleep
 curl "http://192.168.1.100:8765/sleep?token=YOUR_TOKEN"
 
-# Выключение
+# Shutdown
 curl "http://192.168.1.100:8765/shutdown?token=YOUR_TOKEN"
 ```
 
-Ответы: `200 ok`, `202 accepted`, `401 unauthorized`, `403 forbidden`, `409 conflict` (уже идёт отсчёт или rate limit).
+Responses: `200 ok`, `202 accepted`, `401 unauthorized`, `403 forbidden`, `409 conflict` (countdown already active or rate limited).
 
-## Безопасность
+## Security
 
-- **HTTP без TLS** — токен виден в сетевом трафике. Используйте только в доверенной LAN (WPA2/3 Wi‑Fi).
-- **Токен в query string** — может попасть в логи прокси/браузера. Не открывайте порт в интернет.
-- **Firewall** — при необходимости разрешите входящие на порт только из LAN.
-- Токен сравнивается через `hmac.compare_digest` (защита от timing-атак).
-- Неверный токен → задержка 1 с.
-- По умолчанию принимаются только IP из частных подсетей.
+- **No TLS** — the token is visible on the network. Use only on a trusted LAN (WPA2/3 Wi‑Fi).
+- **Token in query string** — may appear in proxy/browser logs. Do not expose the port to the internet.
+- **Firewall** — allow inbound on the port from LAN only if needed.
+- Token comparison uses `hmac.compare_digest` (timing-attack resistant).
+- Invalid token → 1 s delay.
+- Only private-network IPs are accepted by default.
 
-## Логи
+## Logs
 
-`%APPDATA%\PCSleepService\pc2sleep.log` (ротация до 3 файлов по 1 МБ).
+`%APPDATA%\PCSleepService\pc2sleep.log` (rotation: up to 3 files × 1 MB).
 
-## Тесты (macOS / Linux / Windows)
+## Tests (macOS / Linux / Windows)
 
 ```bash
 pip install -e ".[dev]"
 pytest
 ```
 
-Тесты покрывают конфиг и HTTP-логику без WinAPI.
+Tests cover config and HTTP logic without WinAPI.
 
-## Структура
+## Project structure
 
 ```
 src/pc2sleep/
   __main__.py      # entrypoint
-  config.py        # конфиг
+  config.py        # configuration
   server.py        # HTTP
   actions.py       # sleep/shutdown/minimize (WinAPI)
-  autostart.py     # реестр автозагрузки
+  autostart.py     # startup registry
   single_instance.py
   ui/              # tray + countdown
 ```

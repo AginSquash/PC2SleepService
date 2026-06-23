@@ -1,34 +1,34 @@
 # Conventions
 
-## Код
+## Code
 
-- `src/pc2sleep/` — пакет
-- WinAPI только в `actions.py`, `autostart.py`, `single_instance.py`
-- На non-Windows WinAPI — no-op / skip (для тестов на macOS)
+- `src/pc2sleep/` — package root
+- WinAPI only in `actions.py`, `autostart.py`, `single_instance.py`
+- On non-Windows, WinAPI calls are no-op / skipped (for tests on macOS)
 
-## Безопасность
+## Security
 
-- Токен: `secrets.token_urlsafe(32)`, сравнение `hmac.compare_digest`
-- Токен только в query (`?token=`) — по требованию; риск логов/истории браузера
-- HTTP без TLS — только LAN
-- `allowed_cidrs`: RFC1918 по умолчанию
-- 401 → sleep 1s (brute force)
-- `rate_limit_seconds` между запросами
-- 409 если countdown уже активен
-- `bind=0.0.0.0` — warn в лог, не пробрасывать в интернет
+- Token: `secrets.token_urlsafe(32)`, comparison via `hmac.compare_digest`
+- Token only in query (`?token=`) — by design; risk of logs/browser history
+- HTTP without TLS — LAN only
+- `allowed_cidrs`: RFC1918 by default
+- 401 → 1 s delay (brute force mitigation)
+- `rate_limit_seconds` between requests
+- 409 when countdown is already active
+- `bind=0.0.0.0` — log warning, do not expose to internet
 
 ## UI
 
-- Русский текст в `countdown.py`
+- English strings in `countdown.py` and `tray.py`
 - Countdown: topmost, frameless, minimize all on show
 - Foreground: `AllowSetForegroundWindow` + `SetForegroundWindow` (Win11)
 
-## Автозагрузка
+## Autostart
 
 - `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, value `PCSleepService`
-- По умолчанию выкл — пользователь включает в трее
+- Disabled by default — user enables via tray menu
 
-## Сборка
+## Build
 
-- `scripts/build_exe.ps1` на Windows
+- `scripts/build_exe.cmd` or `scripts/build_exe.ps1` on Windows
 - PyInstaller `--onefile --windowed`

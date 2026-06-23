@@ -37,21 +37,21 @@ class TrayController:
     def _build_menu(self) -> None:
         menu = QMenu()
 
-        open_config = QAction("Открыть папку настроек", menu)
+        open_config = QAction("Open settings folder", menu)
         open_config.triggered.connect(self._open_config_folder)
         menu.addAction(open_config)
 
-        open_file = QAction("Открыть config.json", menu)
+        open_file = QAction("Open config.json", menu)
         open_file.triggered.connect(self._open_config_file)
         menu.addAction(open_file)
 
-        show_token = QAction("Показать токен", menu)
+        show_token = QAction("Show token", menu)
         show_token.triggered.connect(self._show_token)
         menu.addAction(show_token)
 
         menu.addSeparator()
 
-        self._autostart_action = QAction("Запускать при старте Windows", menu)
+        self._autostart_action = QAction("Run at Windows startup", menu)
         self._autostart_action.setCheckable(True)
         self._autostart_action.setChecked(autostart.is_autostart_enabled())
         self._autostart_action.triggered.connect(self._toggle_autostart)
@@ -59,7 +59,7 @@ class TrayController:
 
         menu.addSeparator()
 
-        quit_action = QAction("Выход", menu)
+        quit_action = QAction("Quit", menu)
         quit_action.triggered.connect(self._on_quit)
         menu.addAction(quit_action)
 
@@ -99,20 +99,20 @@ class TrayController:
 
         QMessageBox.information(
             None,
-            "Токен доступа",
-            "Токен скопирован в буфер обмена.\n\n"
+            "Access token",
+            "Token copied to clipboard.\n\n"
             f"{self._config.token}\n\n"
-            "Пример запроса:\n"
-            f"http://<IP_ПК>:{self._config.port}/sleep?token={self._config.token}",
+            "Example request:\n"
+            f"http://<PC_IP>:{self._config.port}/sleep?token={self._config.token}",
         )
 
     def _toggle_autostart(self, checked: bool) -> None:
         try:
             autostart.set_autostart(checked)
             self._autostart_action.setChecked(autostart.is_autostart_enabled())
-            state = "включена" if checked else "отключена"
-            self.notify("Автозагрузка", f"Автозагрузка {state}")
+            state = "enabled" if checked else "disabled"
+            self.notify("Autostart", f"Autostart {state}")
         except Exception as exc:
             logger.exception("Failed to toggle autostart")
             self._autostart_action.setChecked(autostart.is_autostart_enabled())
-            QMessageBox.warning(None, "Ошибка", f"Не удалось изменить автозагрузку:\n{exc}")
+            QMessageBox.warning(None, "Error", f"Failed to change autostart setting:\n{exc}")

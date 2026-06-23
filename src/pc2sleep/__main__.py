@@ -58,14 +58,14 @@ class Application:
         if first_run:
             self._tray.notify(
                 "PC Sleep Service",
-                "Сервис запущен. Токен скопирован — откройте меню трея → «Показать токен».",
+                "Service started. Token copied — open tray menu → Show token.",
             )
             self._tray.show_token_dialog()
 
         if self._config.bind == "0.0.0.0":
             logging.getLogger(__name__).warning(
-                "Server binds to 0.0.0.0 — доступен всем интерфейсам. "
-                "Не пробрасывайте порт в интернет без TLS."
+                "Server binds to 0.0.0.0 — accessible on all interfaces. "
+                "Do not expose this port to the internet without TLS."
             )
 
     def stop(self) -> None:
@@ -101,7 +101,7 @@ def main() -> int:
         QMessageBox.warning(
             None,
             "PC Sleep Service",
-            "Приложение уже запущено.",
+            "Application is already running.",
         )
         return 1
 
@@ -119,7 +119,7 @@ def main() -> int:
         QMessageBox.critical(
             None,
             "PC Sleep Service",
-            f"Не удалось запустить HTTP-сервер:\n{exc}",
+            f"Failed to start HTTP server:\n{exc}",
         )
         lock.release()
         return 1

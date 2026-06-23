@@ -1,9 +1,9 @@
 # Components
 
-| Модуль | Назначение |
-|--------|------------|
+| Module | Purpose |
+|--------|---------|
 | `__main__.py` | Entrypoint, logging, orchestration |
-| `config.py` | Load/save JSON, token gen |
+| `config.py` | Load/save JSON, token generation |
 | `server.py` | HTTP endpoints, CIDR, rate limit, `ActionEmitter` |
 | `actions.py` | `sleep_pc`, `shutdown_pc`, `minimize_all` |
 | `autostart.py` | Registry Run key |
