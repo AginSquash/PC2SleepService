@@ -12,6 +12,7 @@ from PySide6.QtWidgets import QMenu, QMessageBox, QSystemTrayIcon
 
 from pc2sleep import autostart
 from pc2sleep.config import AppConfig, get_app_data_dir, get_config_path
+from pc2sleep.network import resolve_bind_hosts
 from pc2sleep.ui.icon import create_app_icon
 
 logger = logging.getLogger(__name__)
@@ -97,13 +98,22 @@ class TrayController:
         if clipboard:
             clipboard.setText(self._config.token)
 
+        hosts = resolve_bind_hosts(self._config.bind)
+        if hosts == ["0.0.0.0"]:
+            endpoints = f"http://<PC_IP>:{self._config.port}/sleep?token={self._config.token}"
+        else:
+            endpoints = "\n".join(
+                f"http://{host}:{self._config.port}/sleep?token={self._config.token}"
+                for host in hosts
+            )
+
         QMessageBox.information(
             None,
             "Access token",
             "Token copied to clipboard.\n\n"
             f"{self._config.token}\n\n"
-            "Example request:\n"
-            f"http://<PC_IP>:{self._config.port}/sleep?token={self._config.token}",
+            "Example request(s):\n"
+            f"{endpoints}",
         )
 
     def _toggle_autostart(self, checked: bool) -> None:

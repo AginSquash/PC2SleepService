@@ -58,9 +58,9 @@ File: `%APPDATA%\PCSleepService\config.json`
 {
   "token": "<generated_token>",
   "port": 8765,
-  "bind": "0.0.0.0",
+  "bind": "auto",
   "countdown_seconds": 60,
-  "allowed_cidrs": ["192.168.0.0/16", "10.0.0.0/8", "172.16.0.0/12"],
+  "allowed_cidrs": ["127.0.0.0/8", "192.168.0.0/16", "10.0.0.0/8", "172.16.0.0/12"],
   "rate_limit_seconds": 5,
   "logging_enabled": true,
   "log_max_bytes": 1000000,
@@ -73,7 +73,7 @@ File: `%APPDATA%\PCSleepService\config.json`
 |-----------|-------------|
 | `token` | Secret for requests (min. 16 characters) |
 | `port` | HTTP server port |
-| `bind` | `0.0.0.0` — all interfaces, `127.0.0.1` — localhost only |
+| `bind` | `auto` (default) — LAN IPs only, VPN-safe; `0.0.0.0` — all interfaces; or a specific IPv4 |
 | `countdown_seconds` | Seconds before sleep/shutdown |
 | `allowed_cidrs` | Allowed client subnets (RFC1918 by default) |
 | `rate_limit_seconds` | Minimum interval between requests |
@@ -96,6 +96,19 @@ curl "http://192.168.1.100:8765/shutdown?token=YOUR_TOKEN"
 ```
 
 Responses: `200 ok`, `202 accepted`, `401 unauthorized`, `403 forbidden`, `409 conflict` (countdown already active or rate limited).
+
+## VPN (AmneziaWG, WireGuard, etc.)
+
+With an active VPN, `bind: "0.0.0.0"` often breaks LAN access: responses are routed through the VPN tunnel. **Use `bind: "auto"`** (default) — the server listens only on physical LAN adapters (AmneziaWG / Wintun / WireGuard interfaces are excluded).
+
+If it still does not work:
+
+1. In AmneziaWG, enable **Allow LAN / local network** (bypass LAN from the tunnel).
+2. Set a fixed LAN IP explicitly, e.g. `"bind": "192.168.1.100"`.
+3. Check Windows Firewall — allow inbound TCP on your port for **Private** networks.
+4. Open tray menu → **Show token** — it lists the exact URLs to use.
+
+Split-tunneling exclusions for the app process alone may not fix inbound LAN traffic; interface binding is what matters.
 
 ## Security
 

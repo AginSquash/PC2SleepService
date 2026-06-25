@@ -36,7 +36,7 @@ def http_server(qapp, test_config):
     state = RequestState(test_config.rate_limit_seconds)
     server = HTTPServerThread(test_config, emitter, state)
     server.start()
-    host, port = server._server.server_address  # type: ignore[union-attr]
+    host, port = server._servers[0].server_address
     test_config.port = port
     yield server, emitter, state, host, port
     server.stop()

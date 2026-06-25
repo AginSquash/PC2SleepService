@@ -35,6 +35,12 @@
 - `log_backup_count` — rotated files kept (default 2, ~3 MB total)
 - `log_ping_requests` — log `/ping` hits (default `false`)
 
+## VPN / bind
+
+- Default `bind: auto` — LAN IPv4 only, excludes AmneziaWG / WireGuard / Wintun adapters
+- Multiple HTTP listeners when several LAN IPs exist
+- `0.0.0.0` may break LAN access with active full-tunnel VPN
+
 ## Build
 
 - `scripts/build_exe.cmd` or `scripts/build_exe.ps1` on Windows

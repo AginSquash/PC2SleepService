@@ -72,7 +72,14 @@ class Application:
         if self._config.bind == "0.0.0.0":
             logging.getLogger(__name__).warning(
                 "Server binds to 0.0.0.0 — accessible on all interfaces. "
+                "With an active VPN, LAN requests may fail; use bind=auto instead. "
                 "Do not expose this port to the internet without TLS."
+            )
+        elif self._config.bind == "auto":
+            addresses = self._http.listening_addresses()
+            logging.getLogger(__name__).info(
+                "LAN endpoints: %s",
+                ", ".join(f"http://{addr}" for addr in addresses),
             )
 
     def stop(self) -> None:

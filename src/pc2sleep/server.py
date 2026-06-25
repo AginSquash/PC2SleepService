@@ -13,6 +13,8 @@ from urllib.parse import parse_qs, urlparse
 
 from PySide6.QtCore import QObject, Signal
 
+from pc2sleep.network import resolve_bind_hosts
+
 if TYPE_CHECKING:
     from pc2sleep.config import AppConfig
 
@@ -143,7 +145,7 @@ class PCSleepRequestHandler(BaseHTTPRequestHandler):
 
 
 class HTTPServerThread:
-    """Run ThreadingHTTPServer in a background daemon thread."""
+    """Run one or more ThreadingHTTPServers in background daemon threads."""
 
     def __init__(
         self,
@@ -154,8 +156,15 @@ class HTTPServerThread:
         self._config = config
         self._emitter = emitter
         self._request_state = request_state
-        self._server: ThreadingHTTPServer | None = None
-        self._thread: threading.Thread | None = None
+        self._servers: list[ThreadingHTTPServer] = []
+        self._threads: list[threading.Thread] = []
+
+    def listening_addresses(self) -> list[str]:
+        return [f"{host}:{self._config.port}" for host in self._bind_hosts]
+
+    @property
+    def _bind_hosts(self) -> list[str]:
+        return resolve_bind_hosts(self._config.bind)
 
     def start(self) -> None:
         handler = type(
@@ -167,27 +176,39 @@ class HTTPServerThread:
                 "request_state": self._request_state,
             },
         )
-        self._server = ThreadingHTTPServer(
-            (self._config.bind, self._config.port),
-            handler,
-        )
-        self._thread = threading.Thread(
-            target=self._server.serve_forever,
-            name="pc2sleep-http",
-            daemon=True,
-        )
-        self._thread.start()
-        logger.info(
-            "HTTP server listening on %s:%s",
-            self._config.bind,
-            self._config.port,
-        )
+
+        started: list[str] = []
+        for host in self._bind_hosts:
+            try:
+                server = ThreadingHTTPServer((host, self._config.port), handler)
+            except OSError as exc:
+                logger.warning("Failed to bind %s:%s: %s", host, self._config.port, exc)
+                continue
+
+            thread = threading.Thread(
+                target=server.serve_forever,
+                name=f"pc2sleep-http-{host}",
+                daemon=True,
+            )
+            thread.start()
+            self._servers.append(server)
+            self._threads.append(thread)
+            started.append(f"{host}:{self._config.port}")
+
+        if not started:
+            raise OSError(
+                f"Failed to start HTTP server on port {self._config.port} "
+                f"(bind={self._config.bind!r})"
+            )
+
+        logger.info("HTTP server listening on %s", ", ".join(started))
 
     def stop(self) -> None:
-        if self._server:
-            self._server.shutdown()
-            self._server.server_close()
-            self._server = None
-        if self._thread:
-            self._thread.join(timeout=5)
-            self._thread = None
+        for server in self._servers:
+            server.shutdown()
+            server.server_close()
+        self._servers.clear()
+
+        for thread in self._threads:
+            thread.join(timeout=5)
+        self._threads.clear()
