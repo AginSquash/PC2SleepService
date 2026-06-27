@@ -27,6 +27,7 @@ flowchart LR
 - Log: `%APPDATA%/PCSleepService/pc2sleep.log` (RotatingFileHandler, configurable size/backups)
 - `log_ping_requests: false` by default — periodic `/ping` does not fill the log
 - `logging_enabled: false` disables all file logging
+- `bind: auto` — listen on physical LAN IPs, skip VPN tunnel adapters (AmneziaWG / WireGuard)
 - Single instance: mutex `Global\PCSleepService_v1`
 
 ## Startup

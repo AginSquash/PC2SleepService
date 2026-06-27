@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ipaddress
 import json
 import os
 import secrets
@@ -14,6 +15,7 @@ APP_DIR_NAME = "PCSleepService"
 CONFIG_FILE_NAME = "config.json"
 
 DEFAULT_ALLOWED_CIDRS = [
+    "127.0.0.0/8",
     "192.168.0.0/16",
     "10.0.0.0/8",
     "172.16.0.0/12",
@@ -43,7 +45,7 @@ def get_log_path() -> Path:
 class AppConfig:
     token: str
     port: int = 8765
-    bind: str = "0.0.0.0"
+    bind: str = "auto"
     countdown_seconds: int = 60
     allowed_cidrs: list[str] = field(default_factory=lambda: list(DEFAULT_ALLOWED_CIDRS))
     rate_limit_seconds: int = 5
@@ -67,6 +69,15 @@ class AppConfig:
             raise ValueError("log_max_bytes must be >= 10000")
         if self.log_backup_count < 0:
             raise ValueError("log_backup_count must be >= 0")
+        self._validate_bind()
+
+    def _validate_bind(self) -> None:
+        if self.bind in ("0.0.0.0", "auto"):
+            return
+        try:
+            ipaddress.ip_address(self.bind)
+        except ValueError as exc:
+            raise ValueError("bind must be 'auto', '0.0.0.0', or a valid IP address") from exc
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
